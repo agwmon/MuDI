@@ -1,6 +1,6 @@
 # MuDI
 This is an official implementation of paper 'Identity Decoupling for Multi-Subject Personalization of Text-to-Image Models'.
-* Arxiv: [link](https://github.com/agwmon/mudi)
+* Arxiv: [link](https://arxiv.org/abs/2404.04243)
 * Project page: [link](https://mudi-t2i.github.io/)
 
 ## Installation
