@@ -72,3 +72,17 @@ Please see inference_demo.ipynb
 - [ ] Automatic mask generation
 - [ ] with other training method (dco)
 - [ ] more than three concepts
+
+## Bibtex
+https://arxiv.org/abs/2404.04243
+```
+@misc{jang2024identity,
+      title={Identity Decoupling for Multi-Subject Personalization of Text-to-Image Models}, 
+      author={Sangwon Jang and Jaehyeong Jo and Kimin Lee and Sung Ju Hwang},
+      year={2024},
+      eprint={2404.04243},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
+      
