@@ -73,7 +73,7 @@ accelerate launch train_segmix_lora_sdxl.py --instance_data_dir="dataset/categor
 
 ## Inference
 We provide an example of our Seg-Mix trained model. (olis harry potter toy & hta corgi)
-[Google Drive](https://drive.google.com/file/d/1ouYhH96OS-di35JG1h9dPaLjM_qLd85_/view?usp=sharing)
+[Google Drive](https://drive.google.com/file/d/1qNaZjf7pA-odpBwALbAaceZ06rmS0xAi/view?usp=sharing)
 
 
 Please see inference_demo.ipynb
