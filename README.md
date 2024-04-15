@@ -35,7 +35,7 @@ In `dataset/category/actionfigure_2_and_dog0/metadata.jsonl`, we provide an exam
 ```
 The 'id' key in the first line only needs to be different from each other, and the value is used in the prompt for the seg-mix sample.
 ### Prior dataset
-We found that using DCO loss showed better performance than Dreambooth, **without the need for constructing a prior-preservation dataset**. Therefore, we used DCO loss instead in our code. 
+We found that using [DCO loss](https://github.com/kyungmnlee/dco) showed better performance than Dreambooth, **without the need for constructing a prior-preservation dataset**. Therefore, we used DCO loss instead in our code. 
 
 However, all the experiments reported in our paper were conducted with Dreambooth using prior-preservation loss. If you want to re-implement, please check our automatic prior dataset generation pipeline. 
 <details>
