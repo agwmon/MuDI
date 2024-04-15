@@ -6,6 +6,8 @@ This is an official implementation of paper 'Identity Decoupling for Multi-Subje
 ## Installation
 ```
 pip install diffusers[torch] transformers peft wandb scipy
+
+# for automatic masking
 pip install git+https://github.com/facebookresearch/segment-anything.git
 ```
 
@@ -33,6 +35,13 @@ In `dataset/category/actionfigure_2_and_dog0/metadata.jsonl`, we provide an exam
 ```
 The 'id' key in the first line only needs to be different from each other, and the value is used in the prompt for the seg-mix sample.
 ### Prior dataset
+We found that using DCO loss showed better performance than Dreambooth, **without the need for constructing a prior-preservation dataset**. Therefore, we used DCO loss instead in our code. 
+
+However, all the experiments reported in our paper were conducted with Dreambooth using prior-preservation loss. If you want to re-implement, please check our automatic prior dataset generation pipeline. 
+<details>
+<summary>Prepare prior dataset</summary>
+<div markdown="1">
+
 We provide an automatic mask generation pipeline for the prior dataset. The prior mask does not need to be very accurate.
 ```
 python generate_prior.py --gen_class $CLASS --gen_mask
@@ -41,8 +50,12 @@ In `dataset/reg/actionfigure_2_and_dog0/class_metadata.jsonl`, we provide an exa
 
 *TODO* - automatic data preperation pipeline
 
+</div>
+</details>
+
+
 ## Seg-Mix
-In our experiments, about 25GB of GPU VRAM was used, and it is possible to run on < 20GB VRAM using --gradient_checkpoint.
+In our experiments, about 18GB of GPU VRAM was used, and it is possible to run on < 15GB VRAM using --gradient_checkpoint.
 ```
 VAL_PROMPT="olis harry potter toy and hta corgi playing together, floating on the pool."
 DATASET_NAME="actionfigure_2_and_dog0"
@@ -54,9 +67,7 @@ accelerate launch train_segmix_lora_sdxl.py --instance_data_dir="dataset/categor
     --pretrained_vae_model_name_or_path=$VAE_PATH \
     --output_dir=output/$DATASET_NAME"_p"$SEG_MIX_PROB"_s"$SEG_MIX_START_STEP \
     --validation_prompt="$VAL_PROMPT" --report_to=wandb --resolution=1024 --train_batch_size=1 --gradient_accumulation_steps=2 \
-    --checkpointing_steps=20000 --max_train_steps=2010 --validation_epochs=3 --save_steps=200 --lr_warmup_steps=0 --seed=42 --rank=32 \
-    --learning_rate=1e-4 --with_prior_preservation \
-    --class_data_dir="dataset/reg/"$DATASET_NAME --num_class_images=100 \
+    --checkpointing_steps=20000 --max_train_steps=2010 --validation_epochs=3 --save_steps=200 --lr_warmup_steps=0 --seed=42 --rank=32 --learning_rate=1e-4 \
     --segmix_prob=$SEG_MIX_PROB --segmix_start_step=$SEG_MIX_START_STEP --relative_scale=0.0 --soft_alpha 1.0
 ```
 
@@ -70,7 +81,7 @@ Please see inference_demo.ipynb
 ## TODO
 - [ ] Detect_and_Compare metric
 - [ ] Automatic mask generation
-- [ ] with other training method (dco)
+- [X] with other training method (dco)
 - [ ] more than three concepts
 
 ## Bibtex

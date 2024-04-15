@@ -10,7 +10,6 @@ accelerate launch train_segmix_lora_sdxl.py --instance_data_dir="dataset/categor
     --pretrained_vae_model_name_or_path=$VAE_PATH \
     --output_dir=output/$DATASET_NAME"_p"$SEG_MIX_PROB"_s"$SEG_MIX_START_STEP \
     --validation_prompt="$VAL_PROMPT" --report_to=wandb --resolution=1024 --train_batch_size=1 --gradient_accumulation_steps=2 \
-    --checkpointing_steps=20000 --max_train_steps=2010 --validation_epochs=3 --save_steps=200 --lr_warmup_steps=0 --seed=42 --rank=32 \
-    --learning_rate=1e-4 --with_prior_preservation \
-    --class_data_dir="dataset/reg/"$DATASET_NAME --num_class_images=100 \
+    --checkpointing_steps=20000 --max_train_steps=2010 --validation_epochs=30 --save_steps=200 --lr_warmup_steps=0 --seed=42 --rank=32 \
+    --learning_rate=1e-4 \
     --segmix_prob=$SEG_MIX_PROB --segmix_start_step=$SEG_MIX_START_STEP --relative_scale=0.0 --soft_alpha 1.0 --gradient_checkpointing

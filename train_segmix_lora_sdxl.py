@@ -700,6 +700,12 @@ def parse_args(input_args=None):
         default=1.0,
         help="weight for soft masked diffusion loss, 0 means hard masked diffusion loss, 1.0 means no mask.",
     )
+    parser.add_argument(
+        "--dco_beta",
+        type=float,
+        default=1000
+    )
+    
     if input_args is not None:
         args = parser.parse_args(input_args)
     else:
@@ -1999,6 +2005,16 @@ def main(args):
                     return_dict=False,
                 )[0]
 
+                if args.dco_beta > 0.0 :
+                    with torch.no_grad():
+                        model_pred_dco = unet(
+                            inp_noisy_latents if args.do_edm_style_training else noisy_model_input,
+                            timesteps,
+                            prompt_embeds_input,
+                            added_cond_kwargs=unet_added_conditions,
+                            cross_attention_kwargs={'scale': 0},
+                            return_dict=False,
+                        )[0]
                 weighting = None
                 if args.do_edm_style_training:
                     # Similar to the input preconditioning, the model predictions are also preconditioned
@@ -2060,10 +2076,28 @@ def main(args):
                             1,
                         )
                         loss = (loss * mask).mean()
+                        if args.dco_beta > 0.0:
+                            loss_dco = torch.mean(
+                                (weighting.float() * (model_pred_dco.float() - target.float()) ** 2).reshape(
+                                    target.shape[0], -1
+                                ),
+                                1,
+                            )
+                            loss_dco = (loss_dco * mask).mean()
+                            diff = loss - loss_dco
+                            inside_term = -1 * args.dco_beta * diff
+                            loss = -1 * torch.nn.LogSigmoid()(inside_term)
                     else:
                         loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
                         loss = (loss * mask).mean()
+                        if args.dco_beta > 0.0:
+                            loss_dco = F.mse_loss(model_pred_dco.float(), target.float(), reduction="none")
+                            loss_dco = (loss_dco * mask).mean()
+                            diff = loss - loss_dco
+                            inside_term = -1 * args.dco_beta * diff
+                            loss = -1 * torch.nn.LogSigmoid()(inside_term)
                 else:
+                    raise NotImplementedError("SNR-based loss weights are not yet supported.")
                     # Compute loss-weights as per Section 3.4 of https://arxiv.org/abs/2303.09556.
                     # Since we predict the noise instead of x_0, the original formulation is slightly changed.
                     # This is discussed in Section 4.2 of the same paper.
