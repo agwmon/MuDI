@@ -79,10 +79,10 @@ We provide an example of our Seg-Mix trained model. (olis harry potter toy & hta
 Please see inference_demo.ipynb
 
 ## TODO
-- [ ] Detect_and_Compare metric
+- [X] Detect_and_Compare metric
 - [ ] Automatic mask generation
 - [X] with other training method (dco)
-- [ ] more than three concepts
+- [X] more than three concepts
 
 ## Bibtex
 https://arxiv.org/abs/2404.04243
