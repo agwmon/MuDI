@@ -834,14 +834,7 @@ class DreamBoothDataset(Dataset):
                         instance_dict_list.append(json.loads(line))
                     except: 
                         break
-            # self.instance_data_root = Path(instance_data_root)
-            # if not self.instance_data_root.exists():
-            #     raise ValueError("Instance images root doesn't exists.")
 
-            # instance_images = [Image.open(path) for path in list(Path(instance_data_root).iterdir())]
-            # self.custom_instance_prompts = None
-        
-        # cut-mix info
         info = instance_dict_list[0]
         self.id_to_placeholder = info['id'] # {"a": "sks can", "b": "olis toy" ...}
         self.category_list = list(self.id_to_placeholder.keys()) # ['sks dog', 'olis toy']
@@ -857,9 +850,6 @@ class DreamBoothDataset(Dataset):
         global placeholders
         placeholders = list(c.split(' ')[0] for c in self.id_to_placeholder.values()) # ['sks', 'olis']
 
-        num_subject = len(self.id_to_placeholder) # 2
-        # if num_subject != 2:
-        #     raise ValueError("Currently only support cut-mix with 2 subjects.")
         self.category_instance_images = defaultdict(list)
 
         instance_image_caption = []
@@ -875,7 +865,6 @@ class DreamBoothDataset(Dataset):
             caption = instance_dict[caption_column]
             
             category = instance_dict[id_column] # 'a'
-            # category = self.id_to_placeholder[instance_dict[id_column]] # 'sks can'
             self.category_instance_images[category].append({"image":img, "mask":mask})
 
             instance_image_caption.append((img, mask, caption, category)) 
@@ -897,7 +886,6 @@ class DreamBoothDataset(Dataset):
                 class_dict_list = []
                 with open(self.class_metadata_path, 'r') as f:
                     for line in f:
-                        # class_dict_list.append(json.loads(line))
                         try:
                             class_dict_list.append(json.loads(line))
                         except: 
@@ -917,9 +905,6 @@ class DreamBoothDataset(Dataset):
                 prior_info = class_dict_list[0]
                 self.prior_id_to_placeholder = prior_info['id'] # {"a": "dog", "b": "toy" ...}
                 self.prior_category_list = list(self.prior_id_to_placeholder.keys()) # ['dog', 'toy']
-                # if len(self.prior_category_list) == 1: # same category
-                #     pass
-                # else:
                 self.prior_category_instance_images = defaultdict(list)
 
                 for class_dict in class_dict_list[1:]:
@@ -928,30 +913,15 @@ class DreamBoothDataset(Dataset):
                     img = exif_transpose(img)
                     if not img.mode == "RGB":
                         img = img.convert("RGB")
-                    # img = self.image_transforms(img)
 
                     mask_path = self.class_data_root.joinpath(class_dict[mask_column])
                     mask = Image.open(mask_path)
 
                     caption = class_dict[caption_column]
-                    # category = prior_id_to_placeholder[class_dict[id_column]] # 'dog'
                     category = class_dict[id_column] # 'a'
                     self.prior_category_instance_images[category].append({'image':img, 'caption':caption, 'mask':mask})
-
-                    # class_image_caption.append((img, caption, category))
             else:
                 raise NotImplementedError("Currently only support class_metadata.jsonl")
-                caption = self.class_prompt
-                for img_path in self.class_images_path:
-                    img = Image.open(img_path)
-                    img = exif_transpose(img)
-                    if not img.mode == "RGB":
-                        img = img.convert("RGB")
-                    class_image_caption.append((img, caption))
-
-            # self.class_images_captions = []
-            # for img, caption, category in class_image_caption:
-            #     self.class_images_captions.extend(itertools.repeat((img, caption, category), repeats))
         else:
             self.class_data_root = None
 
@@ -1015,11 +985,7 @@ class DreamBoothDataset(Dataset):
         image: PIL.Image
         mask: PIL.Image
         """
-        original_size = image.size[0]
-        # image = image.resize((1024, 1024))
-        # mask = mask.resize((1024, 1024))
 
-        
         bbox = self.bbox_mask(mask)
         image = image.crop((bbox[0], bbox[1], bbox[2], bbox[3]))
         mask = mask.crop((bbox[0], bbox[1], bbox[2], bbox[3]))
@@ -1027,17 +993,10 @@ class DreamBoothDataset(Dataset):
 
         if fixed_scale is not None:
             rescaling_factor = min((512 - margin) / width, (1024 - margin) / height) * fixed_scale 
-            #(512 - margin) / width * fixed_scale
         else:
             max_factor = min((512 - margin) / width, (1024 - margin) / height)
-            # rescaling_factor = np.random.uniform(0.75, max_factor)
             rescaling_factor = np.random.uniform(max_factor * 0.75, max_factor)
     
-        # rescaling_factor = max_factor
-        # print(rescaling_factor)
-        
-        # new_size = int(original_size * rescaling_factor)
-
         image = image.resize((int(width * rescaling_factor), int(height * rescaling_factor)))
         mask = mask.resize((int(width * rescaling_factor), int(height * rescaling_factor)))
 
@@ -1168,20 +1127,8 @@ class DreamBoothDataset(Dataset):
 
                 class_mask_map = self.mask_to_tensor(class_mask_map)
                 example["class_mask_map"] = class_mask_map * (1 - self.soft_alpha) + self.soft_alpha
-                # class_image = self.segmix_transforms(class_image)
-                # additional_category = random.choice([c for c in self.prior_category_list if c != category]) if len(self.prior_category_list) > 1 else category
-                # additional_dict = random.choice(self.prior_category_instance_images[additional_category])
-                # additional_class_image = additional_dict['image']
-                # additional_class_image = self.segmix_transforms(additional_class_image)
-
-                # if is_first:
-                #     example["class_images"] = torch.cat([class_image, additional_class_image], dim=2)
-                # else:
-                #     example["class_images"] = torch.cat([additional_class_image, class_image], dim=2)
-
                 example["class_prompt"] = self.prior_segmix_template.format(self.prior_id_to_placeholder[category], 
                                                                             self.prior_id_to_placeholder[additional_category])
-            # class_image = exif_transpose(class_image)
             else:
                 example["class_images"] = self.image_transforms(class_image)
                 example["class_prompt"] = class_caption
@@ -1758,18 +1705,6 @@ def main(args):
         add_time_ids = add_time_ids.to(accelerator.device, dtype=weight_dtype)
         return add_time_ids
 
-    if not args.train_text_encoder:
-        pass
-        # tokenizers = [tokenizer_one, tokenizer_two]
-        # text_encoders = [text_encoder_one, text_encoder_two]
-
-        # def compute_text_embeddings(prompt, text_encoders, tokenizers):
-        #     with torch.no_grad():
-        #         prompt_embeds, pooled_prompt_embeds = encode_prompt(text_encoders, tokenizers, prompt)
-        #         prompt_embeds = prompt_embeds.to(accelerator.device)
-        #         pooled_prompt_embeds = pooled_prompt_embeds.to(accelerator.device)
-        #     return prompt_embeds, pooled_prompt_embeds
-
     # Handle instance prompt.
     instance_time_ids = compute_time_ids()
 
@@ -1781,14 +1716,6 @@ def main(args):
             # class_prompt_hidden_states, class_pooled_prompt_embeds = compute_text_embeddings(
             #     args.class_prompt, text_encoders, tokenizers
             # )
-
-    # Clear the memory here
-    if not args.train_text_encoder and not train_dataset.custom_instance_prompts:
-        pass
-        # del tokenizers, text_encoders
-        # gc.collect()
-        # if torch.cuda.is_available():
-        #     torch.cuda.empty_cache()
 
     # If custom instance prompts are NOT provided (i.e. the instance prompt is used for all images),
     # pack the statically computed variables appropriately here. This is so that we don't
@@ -1967,13 +1894,6 @@ def main(args):
                     else:
                         inp_noisy_latents = noisy_model_input / ((sigmas**2 + 1) ** 0.5)
 
-                # time ids
-                # add_time_ids = torch.cat(
-                #     [
-                #         compute_time_ids(original_size=s, crops_coords_top_left=c)
-                #         for s, c in zip(batch["original_sizes"], batch["crop_top_lefts"])
-                #     ]
-                # )
 
                 # Calculate the elements to repeat depending on the use of prior-preservation and custom captions.
                 if not train_dataset.custom_instance_prompts:
@@ -2098,25 +2018,6 @@ def main(args):
                             loss = -1 * torch.nn.LogSigmoid()(inside_term)
                 else:
                     raise NotImplementedError("SNR-based loss weights are not yet supported.")
-                    # Compute loss-weights as per Section 3.4 of https://arxiv.org/abs/2303.09556.
-                    # Since we predict the noise instead of x_0, the original formulation is slightly changed.
-                    # This is discussed in Section 4.2 of the same paper.
-                    snr = compute_snr(noise_scheduler, timesteps)
-                    base_weight = (
-                        torch.stack([snr, args.snr_gamma * torch.ones_like(timesteps)], dim=1).min(dim=1)[0] / snr
-                    )
-
-                    if noise_scheduler.config.prediction_type == "v_prediction":
-                        # Velocity objective needs to be floored to an SNR weight of one.
-                        mse_loss_weights = base_weight + 1
-                    else:
-                        # Epsilon and sample both use the same loss weights.
-                        mse_loss_weights = base_weight
-
-                    loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
-                    loss = ((loss * mask).sum([1, 2, 3]) / mask.sum([1, 2, 3]))
-                    loss = loss.mean(dim=list(range(1, len(loss.shape)))) * mse_loss_weights
-                    loss = loss.mean()
 
                 if args.with_prior_preservation:
                     # Add the prior loss to the instance loss.
@@ -2207,20 +2108,6 @@ def main(args):
 
         if accelerator.is_main_process:
             if args.validation_prompt is not None and epoch % args.validation_epochs == 0:
-                # create pipeline
-                # if not args.train_text_encoder:
-                #     text_encoder_one = text_encoder_cls_one.from_pretrained(
-                #         args.pretrained_model_name_or_path,
-                #         subfolder="text_encoder",
-                #         revision=args.revision,
-                #         variant=args.variant,
-                #     )
-                #     text_encoder_two = text_encoder_cls_two.from_pretrained(
-                #         args.pretrained_model_name_or_path,
-                #         subfolder="text_encoder_2",
-                #         revision=args.revision,
-                #         variant=args.variant,
-                #     )
                 pipeline = StableDiffusionXLPipeline.from_pretrained(
                     args.pretrained_model_name_or_path,
                     vae=vae,

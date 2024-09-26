@@ -1,8 +1,26 @@
 # MuDI
-This is an official implementation of paper 'Identity Decoupling for Multi-Subject Personalization of Text-to-Image Models'.
-* Arxiv: [link](https://arxiv.org/abs/2404.04243)
-* Project page: [link](https://mudi-t2i.github.io/)
+🔥🔥🔥: Try to use our new metric for multi-subject fidelity, **Detect-and-Compare**!
 
+------
+
+This is an official implementation of paper 'Identity Decoupling for Multi-Subject Personalization of Text-to-Image Models'.
+
+**[NeurIPS 2024]**- **[Identity Decoupling for Multi-Subject Personalization of Text-to-Image Models](https://arxiv.org/abs/2404.04243)**
+<br/>
+[Sangwon Jang<sup>*<sup>](https://www.mlai-kaist.com/people), [Jaehyeong Jo<sup>*<sup>](http://harryjo97.github.io/), [Kimin Lee<sup>†<sup>](https://sites.google.com/view/kiminlee), [Sungju Hwang<sup>†<sup>](http://www.sungjuhwang.com/)
+<br/>(* indicates equal contribution, † indicates equal advising)
+
+[![Project Website](https://img.shields.io/badge/Project-Website-orange)](https://mudi-t2i.github.io/) [![arXiv](https://img.shields.io/badge/arXiv-2305.18292-b31b1b.svg)](https://arxiv.org/abs/2404.04243)
+
+## Results
+![results](figures/main_figure.jpg)
+
+![results-1](figures/examples0.jpg)
+![results-1](figures/examples1.jpg)
+
+## Method details
+![methods](figures/method.jpg)
+**Overview of MuDI.** (a) We automatically obtain segmented subjects using SAM and OWLv2 in the preprocessing stage. (b) We augment the training data by randomly positioning segmented subjects with controllable scales to train the diffusion model εθ. We refer to this data augmentation method as *Seg-Mix*. (c) We initialize the generation process with mean-shifted noise created from segmented subjects, which provides a signal for separating identities without missing.
 ## Installation
 ```
 pip install diffusers[torch] transformers peft wandb scipy
@@ -15,7 +33,6 @@ pip install git+https://github.com/facebookresearch/segment-anything.git
 Our training is based on DreamBooth and an additional augmentation method. For training, a segmentation mask is necessary, and the same goes for a prior preservation dataset.
 
 ### Personalization dataset
-*TODO* - automatic mask generation
 
 Automatic mask generation for the personalization dataset is available, but we recommend manually creating masks with precision using the Segment-Anything model.
 
@@ -35,7 +52,7 @@ In `dataset/category/actionfigure_2_and_dog0/metadata.jsonl`, we provide an exam
 ```
 The 'id' key in the first line only needs to be different from each other, and the value is used in the prompt for the seg-mix sample.
 ### Prior dataset
-We found that using [DCO loss](https://github.com/kyungmnlee/dco) showed better performance than Dreambooth, **without the need for constructing a prior-preservation dataset**. Therefore, we used DCO loss instead in our code. 
+We found that using [DCO loss](https://github.com/kyungmnlee/dco) showed almost similar performance to Dreambooth(MSE Loss), **without the need for constructing a prior-preservation dataset**. Therefore, we used DCO loss instead in our code. 
 
 However, all the experiments reported in our paper were conducted with Dreambooth using prior-preservation loss. If you want to re-implement, please check our automatic prior dataset generation pipeline. 
 <details>
@@ -47,8 +64,6 @@ We provide an automatic mask generation pipeline for the prior dataset. The prio
 python generate_prior.py --gen_class $CLASS --gen_mask
 ```
 In `dataset/reg/actionfigure_2_and_dog0/class_metadata.jsonl`, we provide an example of our experiment setting.
-
-*TODO* - automatic data preperation pipeline
 
 </div>
 </details>
@@ -72,20 +87,24 @@ accelerate launch train_segmix_lora_sdxl.py --instance_data_dir="dataset/categor
 ```
 
 ## Inference
-We provide an example of our Seg-Mix trained model. (olis harry potter toy & hta corgi)
-[Google Drive](https://drive.google.com/file/d/1qNaZjf7pA-odpBwALbAaceZ06rmS0xAi/view?usp=sharing)
+We provide an example of our Seg-Mix trained model. (olis harry potter toy & hta corgi) [Google Drive](https://drive.google.com/file/d/1qNaZjf7pA-odpBwALbAaceZ06rmS0xAi/view?usp=sharing)
+
+Please see `inference_demo.ipynb`
+
+## Benchmark dataset
+We provide the combinations of concepts we used in the experiment, along with the training prompts. These data were selected from [DreamBench](https://github.com/google/dreambooth/tree/main/dataset) and [CustomConcept101](https://github.com/adobe-research/custom-diffusion/tree/main/customconcept101), and the captions were generated using ChatGPT. Additional details can be found in the paper.
 
 
-Please see inference_demo.ipynb
+## Detect & Compare
+![methods](figures/appendix_dnc-final.jpg)
+![methods](figures/appendix_dnc_sample.jpg)
+
+We introduce a new metric, **Detect-and-Compare**, for evaluating multi-subject fidelity, which demonstrates a higher correlation with human evaluation compared to existing metrics.  For details, refer to our paper and `detect_and_compare/demo.ipynb`. This includes [DreamSim](https://github.com/ssundaram21/dreamsim), which utilizes an older version of the PEFT library, so downgrading the library version is necessary.
 
 ## TODO
-- [X] Detect_and_Compare metric
-- [ ] Automatic mask generation
-- [X] with other training method (dco)
-- [X] more than three concepts
+- [ ] Update Detect-and-Compare with newer version of DreamSim
 
 ## Bibtex
-https://arxiv.org/abs/2404.04243
 ```
 @misc{jang2024identity,
       title={Identity Decoupling for Multi-Subject Personalization of Text-to-Image Models}, 

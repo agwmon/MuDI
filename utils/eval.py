@@ -12,6 +12,9 @@ from archieve import CACHE_ROOT, EVAL_ROOT, DATA_ROOT
 from utils.assets import QUERY_DICT, DATASET
 from utils.models import load_owl, load_dinov2, load_dreamsim, load_dino
 
+CACHE_ROOT = '/data/sangwon/multi_subject/utils/cache'
+EVAL_ROOT = ''
+DATA_ROOT = ''
 
 def load_query_image(query_dict):
     query_path = query_dict['query_path']

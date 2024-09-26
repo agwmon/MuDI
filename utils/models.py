@@ -1,11 +1,11 @@
 from segment_anything import sam_model_registry, SamPredictor
 from transformers import Owlv2Processor, Owlv2ForObjectDetection, AutoImageProcessor, AutoModel
-# from utils.dreamsim.dreamsim import dreamsim
+from utils.dreamsim.dreamsim import dreamsim
 # from archieve import SAM_ROOT, OWL_ROOT, CACHE_ROOT
 
 SAM_ROOT = '/data/model/segment-anything/sam_vit_h_4b8939.pth'
 OWL_ROOT = "google/owlv2-base-patch16-ensemble"
-# CACHE_ROOT = ''
+CACHE_ROOT = '/data/sangwon/multi_subject/utils/cache'
 
 def load_sam(model_type = "vit_h", device='cuda:0'):
     sam = sam_model_registry[model_type](checkpoint=SAM_ROOT)
@@ -26,5 +26,5 @@ def load_dino(device='cuda:0'):
     model = AutoModel.from_pretrained('facebook/dino-vits16')
     return preprocessor, model.to(device)
 
-# def load_dreamsim(pretrained=True, cache_dir=CACHE_ROOT):
-#     return dreamsim(pretrained=pretrained, cache_dir=cache_dir)
+def load_dreamsim(pretrained=True, cache_dir=CACHE_ROOT):
+    return dreamsim(pretrained=pretrained, cache_dir=cache_dir)
