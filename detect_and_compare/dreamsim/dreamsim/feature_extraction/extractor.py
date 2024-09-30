@@ -15,7 +15,7 @@ Mostly copy-paste from https://github.com/ShirAmir/dino-vit-features.
 """
 
 
-class ViTExtractor:
+class ViTExtractor(nn.Module):
     """ This class facilitates extraction of features, descriptors, and saliency maps from a ViT.
 
     We use the following notation in the documentation of the module's methods:
@@ -27,7 +27,7 @@ class ViTExtractor:
     d - the embedding dimension in the ViT.
     """
 
-    def __init__(self, model_type: str = 'dino_vits8', stride: int = 4, load_dir: str = "./models",
+    def __init__(self, model_type: str = 'dino_vitb16', stride: int = 4, load_dir: str = "./models",
                  device: str = 'cuda'):
         """
         :param model_type: A string specifying the type of model to extract from.
@@ -37,9 +37,10 @@ class ViTExtractor:
         :param stride: stride of first convolution layer. small stride -> higher resolution.
         :param load_dir: location of pretrained ViT checkpoints.
         """
+        super(ViTExtractor, self).__init__()
         self.model_type = model_type
         self.device = device
-        self.model = ViTExtractor.create_model(model_type, load_dir, device=device)
+        self.model = ViTExtractor.create_model(model_type, load_dir)
         if type(self.model) is tuple:
             self.proj = self.model[1]
             self.model = self.model[0]
@@ -54,7 +55,7 @@ class ViTExtractor:
         self.num_patches = None
 
     @staticmethod
-    def create_model(model_type: str, load_dir: str = "./models", device:str = "cuda") -> nn.Module:
+    def create_model(model_type: str, load_dir: str = "./models") -> nn.Module:
         """
         :param model_type: a string specifying which model to load. ['dino_vits8' | 'dino_vits16' | 'dino_vitb8' |
             'dino_vitb16' | 'clip_vitb16' | 'clip_vitb32' | 'clip_vitl14' | 'mae_vitb16' | 'mae_vitl16' | 'mae_vith14' |
@@ -64,9 +65,9 @@ class ViTExtractor:
         """
         if 'dino' in model_type:
             torch.hub.set_dir(load_dir)
-            model = torch.hub.load('facebookresearch/dino:main', model_type, device=device)
+            model = torch.hub.load('facebookresearch/dino:main', model_type)
             if model_type == 'dino_vitb16':
-                sd = torch.load(os.path.join(load_dir, 'dino_vitb16_pretrain.pth'), map_location='cpu')
+                sd = torch.load(os.path.join(load_dir, 'dino_vitb16_pretrain.pth'), map_location='cpu', weights_only=True)
                 proj = DINOHead(768, 2048)
                 proj.mlp[0].weight.data = sd['student']['module.head.mlp.0.weight']
                 proj.mlp[0].bias.data = sd['student']['module.head.mlp.0.bias']

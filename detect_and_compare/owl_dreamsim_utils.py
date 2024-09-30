@@ -155,7 +155,7 @@ class eval_with_dreamsim:
         self.owl_processor = Owlv2Processor.from_pretrained("google/owlv2-base-patch16-ensemble")
         owl_model = Owlv2ForObjectDetection.from_pretrained("google/owlv2-base-patch16-ensemble")
         self.owl_model = owl_model.to(device)
-        ds_model, ds_preprocess = dreamsim(pretrained=True, cache_dir=cache_dir)
+        ds_model, ds_preprocess = dreamsim(pretrained=True, cache_dir=cache_dir, device=device)
         self.ds_model = ds_model
         self.ds_preprocess = ds_preprocess
         self.device = device

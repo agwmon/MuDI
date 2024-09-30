@@ -99,10 +99,10 @@ We provide the combinations of concepts we used in the experiment, along with th
 ![methods](figures/appendix_dnc-final.jpg)
 ![methods](figures/appendix_dnc_sample.jpg)
 
-We introduce a new metric, **Detect-and-Compare**, for evaluating multi-subject fidelity, which demonstrates a higher correlation with human evaluation compared to existing metrics.  For details, refer to our paper and `detect_and_compare/demo.ipynb`. This includes [DreamSim](https://github.com/ssundaram21/dreamsim), which utilizes an older version of the PEFT library, so downgrading the library version is necessary.
+We introduce a new metric, **Detect-and-Compare**, for evaluating multi-subject fidelity, which demonstrates a higher correlation with human evaluation compared to existing metrics.  For details, refer to our paper and `detect_and_compare/demo.ipynb`. ~~This includes [DreamSim](https://github.com/ssundaram21/dreamsim), which utilizes an older version of the PEFT library, so downgrading the library version is necessary.~~
 
 ## TODO
-- [ ] Update Detect-and-Compare with newer version of DreamSim
+- [X] Update Detect-and-Compare with newer version of DreamSim
 
 ## Bibtex
 ```
