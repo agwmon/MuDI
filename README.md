@@ -7,7 +7,7 @@ This is an official implementation of paper 'Identity Decoupling for Multi-Subje
 
 **[NeurIPS 2024]**- **[Identity Decoupling for Multi-Subject Personalization of Text-to-Image Models](https://arxiv.org/abs/2404.04243)**
 <br/>
-[Sangwon Jang<sup>*<sup>](https://www.mlai-kaist.com/people), [Jaehyeong Jo<sup>*<sup>](http://harryjo97.github.io/), [Kimin Lee<sup>†<sup>](https://sites.google.com/view/kiminlee), [Sungju Hwang<sup>†<sup>](http://www.sungjuhwang.com/)
+[Sangwon Jang<sup>*<sup>](https://agwmon.github.io/), [Jaehyeong Jo<sup>*<sup>](http://harryjo97.github.io/), [Kimin Lee<sup>†<sup>](https://sites.google.com/view/kiminlee), [Sungju Hwang<sup>†<sup>](http://www.sungjuhwang.com/)
 <br/>(* indicates equal contribution, † indicates equal advising)
 
 [![Project Website](https://img.shields.io/badge/Project-Website-orange)](https://mudi-t2i.github.io/) [![arXiv](https://img.shields.io/badge/arXiv-2305.18292-b31b1b.svg)](https://arxiv.org/abs/2404.04243)
