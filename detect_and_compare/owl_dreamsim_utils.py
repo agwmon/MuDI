@@ -212,12 +212,94 @@ class eval_with_dreamsim:
             results.append(result)
         return results, owl_out, dreamsim_out
     
+    @torch.no_grad()
     def score(self, image, query_dict, threshold=0.25, return_round=False):
         if 'query_emb' not in query_dict:
             query_dict = self.query_dict_update(query_dict)
         scores = []
         scores_ = []
         results, owl_out, dreamsim_out = self.owl_dreamsim_distance(image, query_dict, threshold)
+        for result in results:
+            distance = result['distance']
+            distance_score = [[1 - x for x in y] for y in distance]
+            distance_score_ = [[round(1 - x, 2) for x in y] for y in distance]
+            scores.append(distance_score)
+            scores_.append(distance_score_)
+        return scores_ if return_round else scores
+
+
+class eval_with_dinov2:
+    def __init__(self, cache_dir=None, device='cuda'):
+        self.owl_processor = Owlv2Processor.from_pretrained("google/owlv2-base-patch16-ensemble")
+        owl_model = Owlv2ForObjectDetection.from_pretrained("google/owlv2-base-patch16-ensemble")
+        self.owl_model = owl_model.to(device)
+        dino_processor = AutoImageProcessor.from_pretrained('facebook/dinov2-base')
+        dino_model = AutoModel.from_pretrained('facebook/dinov2-base')
+        self.dino_preprocess = dino_processor
+        self.dino_model = dino_model.to(device)
+        self.device = device
+
+    def cache_query_embedding(self, query_dict):
+        query_img = query_dict['query_img'] # already sorted
+        query_emb = []
+        for imgs in query_img:
+            embs = []
+            for img in imgs:
+                dino_input = self.dino_preprocess(images=img, return_tensors='pt').to(self.device)
+                emb = self.dino_model(**dino_input).last_hidden_state.mean(dim=1) # 1, 768
+                embs.append(emb.to('cpu'))
+            query_emb.append(torch.cat(embs, dim=0)) # 5, 768
+        query_dict['query_emb'] = query_emb
+        return query_dict
+    
+    def query_dict_update(self, query_dict):
+        query_dict = load_query_image(query_dict)
+        return self.cache_query_embedding(query_dict)
+    
+    def compute_distance(self, candidate, query_dict):
+        # candidate: cropped single image
+        # return:
+        results = {}
+        dino_input = self.dino_preprocess(images=candidate, return_tensors='pt').to(self.device)
+        candidate_emb = self.dino_model(**dino_input).last_hidden_state.mean(dim=1) # 1, 768
+        for i, query_emb in enumerate(query_dict['query_emb']):
+            # query_emb: 5, 768
+            distance = 1 - F.cosine_similarity(candidate_emb, query_emb.to(self.device), dim=-1) # 5
+            distance = distance.tolist() # list of 5 distances
+            results[i] = distance
+        return results # dict[query_name] = list of 5 distances
+    
+    def owl_dinov2_distance(self, img, query_dict, threshold=0.25):
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        categories = query_dict['query_name'] # ['chow chow', 'pembroke welsh corgi']
+        owl_out = detect_and_crop(img, query_dict, self.owl_model, self.owl_processor, threshold)
+        bboxes = owl_out['bbox']
+        results = []
+        dinov2_out = {}
+        for bbox in bboxes:
+            result = {}
+            x1, y1, x2, y2 = bbox
+            # candidate = img.crop((x1, y1, x2, y2))
+            candidate = crop_and_pad_image(img, (x1, y1, x2, y2))
+            result['image'] = candidate
+            result['bbox'] = bbox
+            dinov2_out = self.compute_distance(candidate, query_dict)
+            distances = []
+            for i, category in enumerate(categories):
+                distance = dinov2_out[i] # list
+                distances.append(distance)
+            result['distance'] = distances
+            results.append(result)
+        return results, owl_out, dinov2_out
+    
+    @torch.no_grad()
+    def score(self, image, query_dict, threshold=0.25, return_round=False):
+        if 'query_emb' not in query_dict:
+            query_dict = self.query_dict_update(query_dict)
+        scores = []
+        scores_ = []
+        results, owl_out, dino_out = self.owl_dinov2_distance(image, query_dict, threshold)
         for result in results:
             distance = result['distance']
             distance_score = [[1 - x for x in y] for y in distance]
