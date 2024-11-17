@@ -1,5 +1,6 @@
 # MuDI
-🔥🔥🔥: Try to use our new metric for multi-subject fidelity, **Detect-and-Compare**!
+🔥🔥🔥: We updated our Seg-Mix training code FLUX! \
+🔥🔥: Try to use our new metric for multi-subject fidelity, **Detect-and-Compare**!
 
 ------
 
@@ -85,6 +86,27 @@ accelerate launch train_segmix_lora_sdxl.py --instance_data_dir="dataset/categor
     --checkpointing_steps=20000 --max_train_steps=2010 --validation_epochs=3 --save_steps=200 --lr_warmup_steps=0 --seed=42 --rank=32 --learning_rate=1e-4 \
     --segmix_prob=$SEG_MIX_PROB --segmix_start_step=$SEG_MIX_START_STEP --relative_scale=0.0 --soft_alpha 1.0
 ```
+## Seg-Mix with FLUX
+Check flux directory.
+```
+export MODEL_NAME="/data/model/FLUX.1-dev"
+export TRAIN_CONFIG_PATH="flux/teddys"
+export WANDB_NAME="test"
+
+accelerate launch flux/train_segmix_lora_flux.py \
+  --pretrained_model_name_or_path=$MODEL_NAME --mixed_precision="bf16" \
+  --instance_data_dir=$TRAIN_CONFIG_PATH --caption_column="text" \
+  --resolution=512  --learning_rate=3e-4 \
+  --train_batch_size=1 --gradient_accumulation_steps=4 --rank=32 \
+  --max_train_steps=2010 --checkpointing_steps=20000 --save_steps=500 --validation_epochs 40 \
+  --lr_scheduler="constant" --lr_warmup_steps=0 \
+  --seed=42 \
+  --output_dir="output_flux/"$WANDB_NAME \
+  --validation_prompt="a olis beige teddy bear and hta brown teddy bear dancing in the disco party, 4K, high quality" --report_to="wandb" --wandb_name=$WANDB_NAME --guidance_scale=1 \
+  --segmix_prob=0.3 --segmix_start_step=0
+```
+* FLUX outperforms SDXL in multi-subject personalization, showing strong results even without our initialization! (So, we exclude it in our pipeline with FLUX)
+* FLUX is also robust to overfitting without DreamBooth's prior-preservation loss, making it unnecessary.
 
 ## Inference
 We provide an example of our Seg-Mix trained model. (olis harry potter toy & hta corgi) [Google Drive](https://drive.google.com/file/d/1qNaZjf7pA-odpBwALbAaceZ06rmS0xAi/view?usp=sharing)
