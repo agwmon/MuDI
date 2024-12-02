@@ -136,5 +136,14 @@ We introduce a new metric, **Detect-and-Compare**, for evaluating multi-subject 
       archivePrefix={arXiv},
       primaryClass={cs.CV}
 }
+
+@inproceedings{
+  jang2024identity,
+  title={Identity Decoupling for Multi-Subject Personalization of Text-to-Image Models},
+  author={Sangwon Jang and Jaehyeong Jo and Kimin Lee and Sung Ju Hwang},
+  booktitle={The Thirty-eighth Annual Conference on Neural Information Processing Systems},
+  year={2024},
+  url={https://openreview.net/forum?id=tEEpVPDaRf}
+}
 ```
       
