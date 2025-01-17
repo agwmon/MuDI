@@ -111,7 +111,9 @@ accelerate launch flux/train_segmix_lora_flux.py \
 ## Inference
 We provide an example of our Seg-Mix trained model. (olis harry potter toy & hta corgi) [Google Drive](https://drive.google.com/file/d/1qNaZjf7pA-odpBwALbAaceZ06rmS0xAi/view?usp=sharing)
 
-Please see `inference_demo.ipynb`
+(Update; 25.Jan.17) Additionally, we also provide our Seg-Mix trained model with five subjects. [Google Drive](https://drive.google.com/drive/folders/1fCBCJVjP6nINozdUjUwmVcst5-Z8niKx?usp=drive_link)
+
+Please see `inference_demo.ipynb` and `inference_demo_more_than_two.ipynb`
 
 ## Benchmark dataset
 We provide the combinations of concepts we used in the experiment, along with the training prompts. These data were selected from [DreamBench](https://github.com/google/dreambooth/tree/main/dataset) and [CustomConcept101](https://github.com/adobe-research/custom-diffusion/tree/main/customconcept101), and the captions were generated using ChatGPT. Additional details can be found in the paper.
